@@ -1,0 +1,12 @@
+aiogram==3.11.0
+youtube-search-python
+spotipy
+yt_dlp
+python-dotenv
+bs4
+pillow
+deep-translator
+aiogram[i18n]
+aiosqlite
+instagrapi
+selenium
