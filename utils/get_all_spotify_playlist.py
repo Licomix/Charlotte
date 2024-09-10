@@ -6,13 +6,14 @@ from spotipy.oauth2 import SpotifyClientCredentials
 
 from config.secrets import SPOTIFY_CLIENT_ID, SPOTIFY_SECRET
 
+
 auth_manager = SpotifyClientCredentials(
     client_id=SPOTIFY_CLIENT_ID, client_secret=SPOTIFY_SECRET
 )
 spotify = spotipy.Spotify(auth_manager=auth_manager)
 
 
-def get_all_tracks_from_playlist(url: str) -> list[str]:
+def get_all_tracks_from_playlist_spotify(url: str) -> list[str]:
     """
     Retrieves all track URLs from a Spotify playlist.
 

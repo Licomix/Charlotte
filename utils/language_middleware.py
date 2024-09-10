@@ -3,9 +3,9 @@ from aiogram.utils.i18n import FSMI18nMiddleware, I18n, I18nMiddleware
 
 from database.database_manager import SQLiteDatabaseManager
 
+
 i18n = I18n(path="locales", default_locale="en", domain="messages")
 i18n_middleware = FSMI18nMiddleware(i18n)
-
 
 class CustomMiddleware(I18nMiddleware):
     def __init__(self, i18n: I18n):

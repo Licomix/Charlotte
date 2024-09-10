@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from deep_translator import GoogleTranslator
 import logging
 
+
 executor = ThreadPoolExecutor()
 
 def translate_sync(text: str, target_language: str) -> str:

@@ -35,7 +35,7 @@ If you like this repository, feel free to leave a star ⭐ to motivate me improv
 - Telegram Bot Token. Get it from [BotFather](https://t.me/BotFather)
 - Spotify client ID `for Spotify support` [Click here to get](https://developer.spotify.com/dashboard/login)
 - Spotify client Secret `for Spotify support` [Click here to get](https://developer.spotify.com/dashboard/login)
-- Your instagram profile username and password
+- Your instagram profile username and password `for instagram support`
 
 <!-- INSTALLATION GUIDE -->
 ## <img src="https://cdn.discordapp.com/emojis/814216203466965052.png" width="25px" height="25px">》Installation Guide

@@ -34,14 +34,6 @@ async def download_instagram(url: str, output_path: str = "other/downloadsTemp",
         - media_group: A media group object containing all the downloaded media (photos or videos).
         - caption: The caption of the Instagram post.
         - temp_medias: A list of file paths to the downloaded media.
-
-    int
-        Returns 1 if an error occurs during the download process.
-
-    Exceptions:
-    -----------
-    Exception
-        Logs and returns an error if any exception occurs during the downloading process.
     """
     try:
         client = Client()
@@ -95,6 +87,5 @@ async def download_instagram(url: str, output_path: str = "other/downloadsTemp",
         return media_group, media.caption_text, temp_medias
 
     except Exception as e:
-        print(e)
         logging.error(f"Error downloading Instagram media: {str(e)}")
-        return 1
+        return None

@@ -1,6 +1,7 @@
 import os
 from typing import Literal
 
+
 def is_image_or_video(filename: str) -> Literal["video", "photo", "gif", "unknown"]:
     """
     Determines the file type by its extension.

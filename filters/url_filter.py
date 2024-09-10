@@ -23,10 +23,10 @@ class UrlFilter(BaseFilter):
     """
     async def __call__(self, message: types.Message) -> bool:
         return any([
-            re.match(r'https?://(?:www\.)?(?:youtu\.be\/|youtube\.com/(?:shorts/|watch\?v=))([\w-]+)', message.text),
+            re.match(r'https?://(?:www\.)?(?:youtu\.be/|youtube\.com/(?:shorts/|watch\?v=))([\w-]+)', message.text),
             re.match(r'https?://vm.tiktok.com/', message.text),
             re.match(r'https?://(?:www\.)?tiktok\.com/.*', message.text),
-            re.match(r'https?://soundcloud\.com/([\w-]+)/([\w-]+)', message.text),
+            re.match(r'https://soundcloud\.com/[\w-]+/(?!sets/)[\w-]+', message.text),
             re.match(r'https?://open\.spotify\.com/track/([\w-]+)', message.text),
             re.match(r'https?://music\.apple\.com/.*/album/.+/\d+(\?.*)?$', message.text),
             re.match(r'https?://(?:\w{2,3}\.)?pinterest\.com/[\w/\-]+|https://pin\.it/[A-Za-z0-9]+', message.text),

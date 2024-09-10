@@ -21,7 +21,8 @@ from filters.url_filter import UrlFilter
 from loader import dp
 from utils import (
     delete_files,
-    get_all_tracks_from_playlist,
+    get_all_tracks_from_playlist_soundcloud,
+    get_all_tracks_from_playlist_spotify,
     # random_emoji,
 )
 
@@ -73,7 +74,7 @@ async def download_handler(message: types.Message, format: str = "media"):
         r"https?://vm.tiktok.com/": (download_tiktok, "media"),
         r"https?://vt.tiktok.com/": (download_tiktok, "media"),
         r"https?://(?:www\.)?tiktok\.com/.*": (download_tiktok, "media"),
-        r"https?://soundcloud\.com/([\w-]+)/([\w-]+)": (download_soundcloud, "audio"),
+        r"https://soundcloud\.com\/[\w-]+\/(?!sets\/)[\w-]+": (download_soundcloud, "audio"),
         r"https?://open\.spotify\.com/track/([\w-]+)": (download_spotify, "audio"),
         r'https?://music\.apple\.com/.*/album/.+/\d+(\?.*)?$': (download_apple_music, "audio"),
         r'https?://(?:\w{2,3}\.)?pinterest\.com/[\w/\-]+|https://pin\.it/[A-Za-z0-9]+': (download_pinterest, "media"),
@@ -92,7 +93,7 @@ async def download_handler(message: types.Message, format: str = "media"):
 @dp.message(PlaylistFilter())
 async def download_playlist_handler(message: types.Message, format: str = "audio"):
     if re.match(r"https?://open\.spotify\.com/playlist/([\w-]+)", message.text):
-        tracks = get_all_tracks_from_playlist(message.text)
+        tracks = get_all_tracks_from_playlist_spotify(message.text)
         for track in tracks:
             try:
                 await message.bot.send_chat_action(message.chat.id, "record_voice")
@@ -103,5 +104,17 @@ async def download_playlist_handler(message: types.Message, format: str = "audio
             except Exception as e:
                 logging.error(f"{e}")
                 await message.answer(_(f"Sorry, there's been an error with this song:\n{track}"))
-            except Exception:
-                continue
+
+    elif re.match("https?://soundcloud\.com/[a-zA-Z0-9_-]+/sets/[a-zA-Z0-9_-]+", message.text):
+        tracks = get_all_tracks_from_playlist_soundcloud(message.text)
+        for track in tracks:
+            try:
+                await message.bot.send_chat_action(message.chat.id, "record_voice")
+                audio_filename, thumbnail_filename = await download_soundcloud(url=track, format="audio")
+                await message.bot.send_chat_action(message.chat.id, "upload_voice")
+                await message.answer_audio(audio=types.FSInputFile(audio_filename),
+                                           thumbnail=types.FSInputFile(thumbnail_filename))
+                await delete_files([audio_filename, thumbnail_filename])
+            except Exception as e:
+                logging.error(f"{e}")
+                await message.answer(_(f"Sorry, there's been an error with this song:\n{track}"))

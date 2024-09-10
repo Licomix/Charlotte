@@ -165,3 +165,4 @@ other/logs/*
 other/downloadsTemp/*
 database/database.sql
 config/.env
+test

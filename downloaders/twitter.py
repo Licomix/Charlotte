@@ -5,6 +5,7 @@ import urllib.request
 from asyncio import Semaphore
 
 import yt_dlp
+from fake_headers import Headers
 from aiogram.enums import InputMediaType
 from aiogram.types import FSInputFile
 from aiogram.utils.media_group import MediaGroupBuilder
@@ -38,15 +39,23 @@ async def download_twitter(url: str, output_path: str = "other/downloadsTemp", f
     except yt_dlp.DownloadError:
         async with semaphore:
             try:
-                firefox_options = Options()
-                firefox_options.add_argument("--headless")
-                firefox_options.add_argument("--no-sandbox")
-                firefox_options.add_argument("--disable-dev-shm-usage")
+                header = Headers().generate()["User-Agent"]
 
-                driver = webdriver.Firefox(options=firefox_options)
+                browser_option = Options()
+                browser_option.add_argument("--headless")
+                browser_option.add_argument("--no-sandbox")
+                browser_option.add_argument("--disable-dev-shm-usage")
+                browser_option.add_argument("--ignore-certificate-errors")
+                browser_option.add_argument("--disable-gpu")
+                browser_option.add_argument("--log-level=3")
+                browser_option.add_argument("--disable-notifications")
+                browser_option.add_argument("--disable-popup-blocking")
+                browser_option.add_argument("--user-agent={}".format(header))
+
+                driver = webdriver.Firefox(options=browser_option)
                 driver.get(url)
 
-                await asyncio.sleep(5)
+                await asyncio.sleep(4)
 
                 soup = BeautifulSoup(driver.page_source, "html.parser")
 

@@ -21,13 +21,6 @@ async def download_bilibili(url: str, output_path: str = "other/downloadsTemp", 
     tuple or int
         Returns a tuple containing the title of the video and the file path of the downloaded video if successful.
         Returns 1 if an error occurs.
-
-    Raises:
-    -------
-    yt_dlp.DownloadError
-        Raised when there is an issue downloading the video from Bilibili.
-    Exception
-        Catches and logs any other exceptions during the download process.
     """
     try:
         options = {

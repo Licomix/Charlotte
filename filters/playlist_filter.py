@@ -12,5 +12,6 @@ class PlaylistFilter(BaseFilter):
     """
     async def __call__(self, message: types.Message) -> bool:
         return any([
+            re.match(r'https:\/\/soundcloud\.com\/[a-zA-Z0-9_-]+\/sets\/[a-zA-Z0-9_-]+', message.text),
             re.match(r'https?://open\.spotify\.com/playlist/([\w-]+)', message.text),
         ])

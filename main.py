@@ -13,7 +13,6 @@ from utils.set_bot_commands import set_default_commands
 CustomMiddleware(i18n=i18n).setup_dp(dp)
 
 
-# Event when bot is ready
 @dp.startup()
 async def on_ready():
     """
@@ -22,8 +21,6 @@ async def on_ready():
     logging.info("Bot is ready")
 
 
-
-# Main startup function
 async def main():
     """
     The main asynchronous function to start the bot and perform initial setup.

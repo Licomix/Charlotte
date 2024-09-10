@@ -10,6 +10,7 @@ from aiogram.enums import InputMediaType
 from aiogram.types import FSInputFile
 from aiogram.utils.media_group import MediaGroupBuilder
 
+
 class YouTubeDownloader:
     """
     A class for downloading videos and audio from YouTube using yt-dlp.
@@ -22,13 +23,13 @@ class YouTubeDownloader:
     Methods:
     -------
     download(url: str, format: str)
-        Download a media file (either video or audio) from a given YouTube URL.
+        Choose which function use to download.
 
     download_video(url: str)
         Download a video from a given YouTube URL.
 
     download_music(url: str)
-        Download audio from a given YouTube URL.
+        Download an audio from a given YouTube URL.
     """
 
     def __init__(self, output_path: str = "other/downloadsTemp"):
@@ -85,9 +86,8 @@ class YouTubeDownloader:
 
         Returns:
         -------
-        tuple or None
-            Returns a tuple containing the MediaGroup object, video title, and list of filenames if successful,
-            or None if an error occurs.
+        tuple
+            Returns a tuple containing the MediaGroup object, video title, and list of filenames
         """
         try:
             options = {
@@ -121,9 +121,8 @@ class YouTubeDownloader:
 
         Returns:
         -------
-        tuple or None
-            Returns a tuple containing the audio filename and thumbnail filename if successful,
-            or None if an error occurs.
+        tuple
+            Returns a tuple containing the audio filename and thumbnail filename
         """
         try:
             options = {

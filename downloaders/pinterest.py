@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import os
-import urllib
+import urllib.request
 import re
 
 import aiohttp
@@ -33,14 +33,6 @@ async def download_pinterest(url: str, output_path: str = "other/downloadsTemp",
         - media_group: A media group object containing all the downloaded media (photos or videos).
         - caption: An empty string, as Pinterest posts don't have captions by default.
         - file_path: The path to the downloaded file.
-
-    None
-        Returns None if the media cannot be downloaded or if there's an error with the request.
-
-    Exceptions:
-    -----------
-    Exception
-        Logs and returns None if any exception occurs during the downloading process.
     """
     async with aiohttp.ClientSession() as sesion:
         async with sesion.get(url) as link:

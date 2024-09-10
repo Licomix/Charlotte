@@ -1,11 +1,12 @@
+import json
 import logging
 import os
 import asyncio
+import urllib.request
 
 import yt_dlp
 from yt_dlp.utils import sanitize_filename
 
-from utils.get_soundcloud_author import get_soundcloud_author
 from utils import update_metadata
 
 
@@ -22,13 +23,9 @@ async def download_soundcloud(url: str, output_path: str = "other/downloadsTemp"
     Returns:
         tuple or None: A tuple containing the file paths of the downloaded audio and thumbnail images if
             the download is successful. Returns None if there is an error during the download process.
-
-    Raises:
-        Exception: If there is an error during the download process, it will be logged, and the function
-            will return None.
     """
     options = {
-        "format": "m4a/bestaudio/best",
+        "format": "bestaudio",
         "writethumbnail": True,
         "outtmpl": f"{output_path}/{sanitize_filename('%(title)s')}",
         "postprocessors": [
@@ -36,27 +33,31 @@ async def download_soundcloud(url: str, output_path: str = "other/downloadsTemp"
                 "key": "FFmpegExtractAudio",
                 "preferredcodec": "mp3",
             },
-            {
-                "key": "FFmpegThumbnailsConvertor",
-                "format": "jpg",
-            },
         ],
     }
 
     try:
         ydl = yt_dlp.YoutubeDL(options)
         info_dict = await asyncio.to_thread(ydl.extract_info, url, download=False)
-        ydl_title = info_dict.get("title")
+        title = info_dict.get("title")
+        artist = info_dict.get("uploader")
+        thumbnails = info_dict.get("thumbnails", [])
+        cover_url = next((thumbnail["url"] for thumbnail in thumbnails if thumbnail.get("width") == 500), None)
+
+        with open("temp.json", "w") as f:
+            json.dump(info_dict, f)
+
         await asyncio.to_thread(ydl.download, [url])
 
-        artist, title = await get_soundcloud_author(url)
-        audio_filename = os.path.join(output_path, f"{sanitize_filename(ydl_title)}.mp3")
-        thumbnail_filename = os.path.join(output_path, f"{sanitize_filename(ydl_title)}.jpg")
+        audio_filename = os.path.join(output_path, f"{sanitize_filename(title)}.mp3")
+        cover_filename = os.path.join(output_path, f"{sanitize_filename(title)}.jpg")
+
+        urllib.request.urlretrieve(cover_url, cover_filename)
 
         update_metadata(audio_filename, title, artist)
 
-        if os.path.exists(audio_filename) and os.path.exists(thumbnail_filename):
-            return audio_filename, thumbnail_filename
+        if os.path.exists(audio_filename) and os.path.exists(cover_filename):
+            return audio_filename, cover_filename
 
     except Exception as e:
         logging.error(f"Error downloading : {str(e)}")
