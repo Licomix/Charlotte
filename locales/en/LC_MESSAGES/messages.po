@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-09-05 21:46+0200\n"
+"POT-Creation-Date: 2024-09-12 00:26+0200\n"
 "PO-Revision-Date: 2024-09-03 21:37+0200\n"
 "Last-Translator: \n"
 "Language: en\n"
@@ -99,19 +99,19 @@ msgid ""
 " https://buymeacoffee.com/jellytyan"
 msgstr ""
 
-#: handlers/user/url.py:37
+#: handlers/user/url.py:35
 msgid "Video"
 msgstr ""
 
-#: handlers/user/url.py:38
+#: handlers/user/url.py:36
 msgid "Audio"
 msgstr ""
 
-#: handlers/user/url.py:64
+#: handlers/user/url.py:67
 msgid "Critical error #022 - media file is too large"
 msgstr ""
 
-#: handlers/user/url.py:67
+#: handlers/user/url.py:70
 msgid "Sorry, there was an error. Try again later 🧡"
 msgstr ""
 
