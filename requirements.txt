@@ -1,4 +1,4 @@
-aiogram==3.11.0
+aiogram==3.13.0
 youtube-search-python
 spotipy~=2.24.0
 yt_dlp
@@ -8,7 +8,6 @@ deep-translator~=1.11.4
 aiogram[i18n]
 aiosqlite~=0.20.0
 instagrapi~=2.1.2
-selenium~=4.24.0
 pillow
 requests~=2.32.3
 aiofiles~=23.2.1
@@ -17,3 +16,4 @@ aiohttp~=3.10.5
 beautifulsoup4~=4.12.3
 yt-dlp~=2024.8.6
 yarl~=1.11.0
+playwright

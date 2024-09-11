@@ -7,22 +7,19 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from downloaders import (
     YouTubeDownloader,
-    download_apple_music,
-    download_bilibili,
-    download_instagram,
-    download_pinterest,
-    download_soundcloud,
-    download_spotify,
-    download_tiktok,
-    download_twitter,
+    AppleMusicDownloader,
+    BilibiliDownloader,
+    InstagramDownloader,
+    PinterestDownloader,
+    SoundCloudDownloader,
+    SpotifyDownloader,
+    TikTokDownloader,
+    TwitterDownloader,
 )
-from filters.playlist_filter import PlaylistFilter
 from filters.url_filter import UrlFilter
 from loader import dp
 from utils import (
     delete_files,
-    get_all_tracks_from_playlist_soundcloud,
-    get_all_tracks_from_playlist_spotify,
     # random_emoji,
 )
 
@@ -46,41 +43,47 @@ async def handle_format_choice(callback_query: types.CallbackQuery):
     await callback_query.message.delete()
     await download_handler(callback_query.message, format= callback_query.data)
 
+
 async def process_download(message: types.Message, download_func, format: str = "media"):
     try:
         if format == "media":
             await message.bot.send_chat_action(message.chat.id, "record_video")
-            media_group, title, temp_medias = await download_func(url=message.text, format="media")
-            await message.bot.send_chat_action(message.chat.id, "upload_video")
-            await message.answer_media_group(media=media_group.build(), caption=title)
-            await delete_files(temp_medias)
+
+            async for media_group, title, temp_medias in download_func(url=message.text, format="media"):
+                await message.bot.send_chat_action(message.chat.id, "upload_video")
+                await message.answer_media_group(media=media_group.build(), caption=title)
+                await delete_files(temp_medias)
+
         elif format == "audio":
             await message.bot.send_chat_action(message.chat.id, "record_voice")
-            audio_filename, thumbnail_filename = await download_func(url=message.text, format="audio")
-            print(audio_filename, thumbnail_filename)
-            await message.bot.send_chat_action(message.chat.id, "upload_voice")
-            await message.answer_audio(audio=types.FSInputFile(audio_filename), thumbnail=types.FSInputFile(thumbnail_filename))
-            await delete_files([audio_filename, thumbnail_filename])
+
+            async for audio_filename, cover_filename in download_func(url=message.text, format="audio"):
+                await message.bot.send_chat_action(message.chat.id, "upload_voice")
+                await message.answer_audio(audio=types.FSInputFile(audio_filename),
+                                           thumbnail=types.FSInputFile(cover_filename), disable_notification=True)
+                await delete_files([audio_filename, cover_filename])
+
     except exceptions.TelegramEntityTooLarge:
         await message.answer(_("Critical error #022 - media file is too large"))
     except Exception as e:
         logging.error(f"{e}")
         await message.answer(_("Sorry, there was an error. Try again later 🧡"))
 
+
 @dp.message(UrlFilter())
 async def download_handler(message: types.Message, format: str = "media"):
     url_patterns = {
         r"https?://(?:www\.)?(?:youtu\.be\/|youtube\.com/(?:shorts/|watch\?v=))([\w-]+)": (YouTubeDownloader().download, None),
-        r"https?://vm.tiktok.com/": (download_tiktok, "media"),
-        r"https?://vt.tiktok.com/": (download_tiktok, "media"),
-        r"https?://(?:www\.)?tiktok\.com/.*": (download_tiktok, "media"),
-        r"https://soundcloud\.com\/[\w-]+\/(?!sets\/)[\w-]+": (download_soundcloud, "audio"),
-        r"https?://open\.spotify\.com/track/([\w-]+)": (download_spotify, "audio"),
-        r'https?://music\.apple\.com/.*/album/.+/\d+(\?.*)?$': (download_apple_music, "audio"),
-        r'https?://(?:\w{2,3}\.)?pinterest\.com/[\w/\-]+|https://pin\.it/[A-Za-z0-9]+': (download_pinterest, "media"),
-        r"https?://(?:www\.)?bilibili\.(?:com|tv)/[\w/?=&]+": (download_bilibili, "media"),
-        r"https://(?:twitter|x)\.com/\w+/status/\d+": (download_twitter, "media"),
-        r'https://www\.instagram\.com/(?:p|reel|tv|stories)/([A-Za-z0-9_-]+)/': (download_instagram, "media"),
+        r"https?://vm.tiktok.com/": (TikTokDownloader().download, "media"),
+        r"https?://vt.tiktok.com/": (TikTokDownloader().download, "media"),
+        r"https?://(?:www\.)?tiktok\.com/.*": (TikTokDownloader().download, "media"),
+        r'https?://soundcloud\.com/([\w-]+)/([\w-]+)': (SoundCloudDownloader().download, "audio"),
+        r"https?://open\.spotify\.com/(track|playlist)/([\w-]+)": (SpotifyDownloader().download, "audio"),
+        r'https?://music\.apple\.com/.*/album/.+/\d+(\?.*)?$': (AppleMusicDownloader().download, "audio"),
+        r'https?://(?:\w{2,3}\.)?pinterest\.com/[\w/\-]+|https://pin\.it/[A-Za-z0-9]+': (PinterestDownloader().download, "media"),
+        r"https?://(?:www\.)?bilibili\.(?:com|tv)/[\w/?=&]+": (BilibiliDownloader().download, "media"),
+        r"https://(?:twitter|x)\.com/\w+/status/\d+": (TwitterDownloader().download, "media"),
+        r'https://www\.instagram\.com/(?:p|reel|tv|stories)/([A-Za-z0-9_-]+)/': (InstagramDownloader().download, "media"),
     }
 
     for pattern, (download_func, media_format) in url_patterns.items():
@@ -89,32 +92,3 @@ async def download_handler(message: types.Message, format: str = "media"):
         if re.match(pattern, message.text):
             await process_download(message, download_func, format)
             return
-
-@dp.message(PlaylistFilter())
-async def download_playlist_handler(message: types.Message, format: str = "audio"):
-    if re.match(r"https?://open\.spotify\.com/playlist/([\w-]+)", message.text):
-        tracks = get_all_tracks_from_playlist_spotify(message.text)
-        for track in tracks:
-            try:
-                await message.bot.send_chat_action(message.chat.id, "record_voice")
-                audio_filename, thumbnail_filename = await download_spotify(url=track, format="audio")
-                await message.bot.send_chat_action(message.chat.id, "upload_voice")
-                await message.answer_audio(audio=types.FSInputFile(audio_filename), thumbnail=types.FSInputFile(thumbnail_filename))
-                await delete_files([audio_filename, thumbnail_filename])
-            except Exception as e:
-                logging.error(f"{e}")
-                await message.answer(_(f"Sorry, there's been an error with this song:\n{track}"))
-
-    elif re.match("https?://soundcloud\.com/[a-zA-Z0-9_-]+/sets/[a-zA-Z0-9_-]+", message.text):
-        tracks = get_all_tracks_from_playlist_soundcloud(message.text)
-        for track in tracks:
-            try:
-                await message.bot.send_chat_action(message.chat.id, "record_voice")
-                audio_filename, thumbnail_filename = await download_soundcloud(url=track, format="audio")
-                await message.bot.send_chat_action(message.chat.id, "upload_voice")
-                await message.answer_audio(audio=types.FSInputFile(audio_filename),
-                                           thumbnail=types.FSInputFile(thumbnail_filename))
-                await delete_files([audio_filename, thumbnail_filename])
-            except Exception as e:
-                logging.error(f"{e}")
-                await message.answer(_(f"Sorry, there's been an error with this song:\n{track}"))

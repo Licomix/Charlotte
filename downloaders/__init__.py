@@ -1,15 +1,15 @@
-from .apple_music import download_apple_music
-from .bilibili import download_bilibili
-from .pinterest import download_pinterest
-from .soundcloud import download_soundcloud
-from .spotify import download_spotify
-from .tiktok import download_tiktok
+from .apple_music import AppleMusicDownloader
+from .bilibili import BilibiliDownloader
+from .pinterest import PinterestDownloader
+from .soundcloud import SoundCloudDownloader
+from .spotify import SpotifyDownloader
+from .tiktok import TikTokDownloader
 from .youtube import YouTubeDownloader
-from .instagram import download_instagram
-from .twitter import download_twitter
+from .instagram import InstagramDownloader
+from .twitter import TwitterDownloader
 
 __all__ = [
-    "download_apple_music", "download_bilibili", "download_pinterest",
-    "download_soundcloud", "download_spotify", "download_tiktok",
-    "YouTubeDownloader", "download_instagram", "download_twitter"
+    "AppleMusicDownloader", "BilibiliDownloader", "PinterestDownloader",
+    "SoundCloudDownloader", "SpotifyDownloader", "TikTokDownloader",
+    "YouTubeDownloader", "InstagramDownloader", "TwitterDownloader"
 ]
