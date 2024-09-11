@@ -24,6 +24,7 @@ class UrlFilter(BaseFilter):
     async def __call__(self, message: types.Message) -> bool:
         return any([
             re.match(r'https?://(?:www\.)?(?:youtu\.be/|youtube\.com/(?:shorts/|watch\?v=))([\w-]+)', message.text),
+            re.match(r"https:\/\/music\.youtube\.com\/(?:watch\?v=|playlist\?list=)([a-zA-Z0-9\-_]+)", message.text),
             re.match(r'https?://vm.tiktok.com/', message.text),
             re.match(r'https?://(?:www\.)?tiktok\.com/.*', message.text),
             re.match(r'https?://soundcloud\.com/([\w-]+)/([\w-]+)', message.text),

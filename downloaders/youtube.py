@@ -1,11 +1,12 @@
 import logging
 import os
 import asyncio
+import re
 
 import yt_dlp
 from yt_dlp.utils import sanitize_filename
 
-from utils import update_metadata
+from utils import update_metadata, get_all_tracks_from_playlist_soundcloud
 from aiogram.enums import InputMediaType
 from aiogram.types import FSInputFile
 from aiogram.utils.media_group import MediaGroupBuilder
@@ -80,7 +81,13 @@ class YouTubeDownloader:
                 async for result in self._download_video(url):
                     yield result
             elif format == "audio":
-                async for result in self._download_music(url):
+                if re.match(r"https://music\.youtube\.com/playlist\?list=([a-zA-Z0-9\-_]+)", url):
+                    # Playlist
+                    async for result in self._download_playlist(url):
+                        yield result
+
+                #single track
+                async for result in self._download_single_track(url):
                     yield result
             else:
                 logging.error(f"Unsupported format: {format}")
@@ -120,7 +127,41 @@ class YouTubeDownloader:
             logging.error(f"Error downloading YouTube video: {str(e)}")
             yield None
 
-    async def _download_music(self, url: str):
+    async def _download_single_track(self, url: str):
+        """
+        Downloads a single SoundCloud track.
+
+        Parameters:
+        ----------
+        url : str
+            The URL of the SoundCloud track to download.
+
+        Yields:
+        -------
+        tuple
+            Yields the file paths of the downloaded audio and cover image, or None if an error occurs.
+        """
+        yield await self._download_track(url)
+
+    async def _download_playlist(self, url: str):
+        """
+        Downloads a SoundCloud playlist by iterating over each track in the playlist.
+
+        Parameters:
+        ----------
+        url : str
+            The URL of the SoundCloud playlist to download.
+
+        Yields:
+        -------
+        tuple
+            Yields the file paths of the downloaded audio and cover image for each track, or None if an error occurs.
+        """
+        tracks = get_all_tracks_from_playlist_soundcloud(url)
+        for track in tracks:
+            yield await self._download_track(track)
+
+    async def _download_track(self, url: str):
         """
         Download audio from YouTube.
 
@@ -148,7 +189,7 @@ class YouTubeDownloader:
                 update_metadata(audio_filename, title=title, artist=author)
 
                 if os.path.exists(audio_filename):
-                    yield audio_filename, thumbnail_filename
+                    return audio_filename, thumbnail_filename
         except Exception as e:
             logging.error(f"Error downloading YouTube Audio: {str(e)}")
-            yield None
+            return None

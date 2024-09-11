@@ -74,6 +74,7 @@ async def process_download(message: types.Message, download_func, format: str = 
 async def download_handler(message: types.Message, format: str = "media"):
     url_patterns = {
         r"https?://(?:www\.)?(?:youtu\.be\/|youtube\.com/(?:shorts/|watch\?v=))([\w-]+)": (YouTubeDownloader().download, None),
+        r"https:\/\/music\.youtube\.com\/(?:watch\?v=|playlist\?list=)([a-zA-Z0-9\-_]+)": (YouTubeDownloader().download, "audio"),
         r"https?://vm.tiktok.com/": (TikTokDownloader().download, "media"),
         r"https?://vt.tiktok.com/": (TikTokDownloader().download, "media"),
         r"https?://(?:www\.)?tiktok\.com/.*": (TikTokDownloader().download, "media"),

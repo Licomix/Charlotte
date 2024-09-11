@@ -32,7 +32,7 @@ def get_all_tracks_from_playlist_spotify(url: str) -> list[str]:
 
     while True:
         try:
-            results = spotify.playlist_tracks(playlist_id, limit=limit, offset=offset)
+            results = spotify.playlist_items(playlist_id, limit=limit, offset=offset)
             tracks = results["items"]
             all_tracks.extend(tracks)
             if len(tracks) < limit:
