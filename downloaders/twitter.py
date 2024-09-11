@@ -1,10 +1,10 @@
+import re
 import asyncio
 import logging
 import os
 import urllib.request
 
 import yt_dlp
-from fake_headers import Headers
 from aiogram.enums import InputMediaType
 from aiogram.types import FSInputFile
 from aiogram.utils.media_group import MediaGroupBuilder
@@ -96,8 +96,6 @@ class TwitterDownloader:
 
         except yt_dlp.DownloadError:
             try:
-                header = Headers().generate()["User-Agent"]
-
                 async with async_playwright() as p:
                     browser = await p.firefox.launch(
                         headless=True,
@@ -109,7 +107,6 @@ class TwitterDownloader:
                             "--log-level=3",
                             "--disable-notifications",
                             "--disable-popup-blocking",
-                            f"--user-agent={header}"
                         ]
                     )
                     page = await browser.new_page()
@@ -138,7 +135,7 @@ class TwitterDownloader:
 
                     for image in images:
                         image = image.split("&name")[0]
-                        filename = os.path.join(output_path, f"{image.split('/')[-1]}.jpg")
+                        filename = os.path.join(output_path, sanitize_filename(f"{image.split('/')[-1]}.jpg"))
                         try:
                             urllib.request.urlretrieve(image, filename)
                             media_group.add_photo(media=FSInputFile(filename), type=InputMediaType.PHOTO)
@@ -157,3 +154,7 @@ class TwitterDownloader:
         except Exception as e:
             logging.error(f"Error downloading Twitter video: {str(e)}")
             yield None
+
+def sanitize_filename(filename: str) -> str:
+    # Удаляем символы, не подходящие для имени файла
+    return re.sub(r'[<>:"/\\|?*\x00-\x1F]', '_', filename)
