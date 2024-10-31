@@ -45,7 +45,7 @@ class YouTubeDownloader:
         self.output_path = output_path
         os.makedirs(self.output_path, exist_ok=True)
         self.yt_dlp_video_options = {
-                "format": "bv*[filesize < 50M][ext=mp4] + ba[ext=m4a] / w*[filesize < 50M]",
+                "format": "bv*[filesize < 50M][ext=mp4][vcodec^=avc1] + ba[ext=m4a]",
                 "outtmpl": f"{self.output_path}/%(title)s.%(ext)s",
             }
         self.yt_dlp_audio_options = {
