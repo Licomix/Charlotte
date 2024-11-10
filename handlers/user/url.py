@@ -27,7 +27,7 @@ from utils import (
 @dp.message(UrlFilter())
 async def url_handler(message: types.Message):
     youtube_match = re.match(
-        r"https?://(?:www\.)?(?:youtu\.be\/|youtube\.com/(?:shorts/|watch\?v=))([\w-]+)",
+        r'https?://(?:www\.)?(?:m\.)?(?:youtu\.be/|youtube\.com/(?:shorts/|watch\?v=))([\w-]+)',
         message.text
     )
     if youtube_match:
@@ -60,7 +60,7 @@ async def process_download(message: types.Message, download_func, format: str = 
             async for audio_filename, cover_filename in download_func(url=message.text, format="audio"):
                 await message.bot.send_chat_action(message.chat.id, "upload_voice")
                 await message.answer_audio(audio=types.FSInputFile(audio_filename),
-                                           thumbnail=types.FSInputFile(cover_filename), disable_notification=True)
+                                        thumbnail=types.FSInputFile(cover_filename), disable_notification=True)
                 await delete_files([audio_filename, cover_filename])
 
     except exceptions.TelegramEntityTooLarge:
@@ -73,7 +73,7 @@ async def process_download(message: types.Message, download_func, format: str = 
 @dp.message(UrlFilter())
 async def download_handler(message: types.Message, format: str = "media"):
     url_patterns = {
-        r"https?://(?:www\.)?(?:youtu\.be\/|youtube\.com/(?:shorts/|watch\?v=))([\w-]+)": (YouTubeDownloader().download, None),
+        r'https?://(?:www\.)?(?:m\.)?(?:youtu\.be/|youtube\.com/(?:shorts/|watch\?v=))([\w-]+)': (YouTubeDownloader().download, None),
         r"https:\/\/music\.youtube\.com\/(?:watch\?v=|playlist\?list=)([a-zA-Z0-9\-_]+)": (YouTubeDownloader().download, "audio"),
         r"https?://vm.tiktok.com/": (TikTokDownloader().download, "media"),
         r"https?://vt.tiktok.com/": (TikTokDownloader().download, "media"),
