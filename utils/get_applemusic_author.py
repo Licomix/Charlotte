@@ -21,13 +21,16 @@ async def get_applemusic_author(url: str):
 
                 soup = BeautifulSoup(html_content, 'html.parser')
 
-                title_span = soup.find('h1', class_='headings__title svelte-1fpig7d')
-                track_title = title_span.find('span', dir='auto').text.strip() if title_span else None
+                with open("temp.html", "w") as file:
+                    file.write(str(soup))
 
-                artist_a = soup.find('div', class_='headings__subtitles svelte-1fpig7d')
-                artist_name = artist_a.find('a').text.strip() if artist_a else None
+                title = soup.find('title').text.strip()
+                track_title = title.split("–")[0].strip() if title else None
+
+                artist_name = title.split("–")[1].replace("Song by ", "").strip() if title else None
 
                 picture_tag = soup.find('picture', class_='svelte-3e3mdo')
+
                 if picture_tag:
                     source_tag = picture_tag.find('source', type="image/webp")
                     if source_tag:
