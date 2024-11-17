@@ -47,6 +47,7 @@ class YouTubeDownloader:
         self.yt_dlp_video_options = {
                 "format": "bv*[filesize < 50M][ext=mp4][vcodec^=avc1] + ba[ext=m4a]",
                 "outtmpl": f"{self.output_path}/%(title)s.%(ext)s",
+                'noplaylist': True,
             }
         self.yt_dlp_audio_options = {
                 "format": "m4a/bestaudio/best",
