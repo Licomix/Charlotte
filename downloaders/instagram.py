@@ -98,14 +98,11 @@ class InstagramDownloader:
             - temp_medias: A list of file paths to the downloaded media.
         """
         try:
-            if os.path.exists("cookies.json"):
-                with open("cookies.json", "r") as f:
-                    cookies = json.load(f)
-                self.client.set_settings(cookies)
-            else:
-                self.client.login(INSTA_USERNAME, INSTA_PASSWORD)
-                with open("cookies.json", "w") as f:
-                    json.dump(self.client.get_settings(), f)
+            # Check user login
+            try:
+                user_info = self.client.user_info(str(self.client.user_id))
+            except Exception as e:
+                self._instagram_login()
 
             media_urls = []
             media_types = []
@@ -149,3 +146,13 @@ class InstagramDownloader:
         except Exception as e:
             logging.error(f"Error downloading Instagram media: {str(e)}")
             yield None
+
+    def _instagram_login(self):
+        if os.path.exists("cookies.json"):
+            with open("cookies.json", "r") as f:
+                cookies = json.load(f)
+            self.client.set_settings(cookies)
+        else:
+            self.client.login(INSTA_USERNAME, INSTA_PASSWORD)
+            with open("cookies.json", "w") as f:
+                json.dump(self.client.get_settings(), f)
