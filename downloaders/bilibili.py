@@ -1,7 +1,13 @@
 import logging
 import os
+import asyncio
 
 import yt_dlp
+
+from utils import truncate_string
+from aiogram.enums import InputMediaType
+from aiogram.types import FSInputFile
+from aiogram.utils.media_group import MediaGroupBuilder
 
 
 class BilibiliDownloader:
@@ -37,7 +43,7 @@ class BilibiliDownloader:
         self.output_path = output_path
         os.makedirs(self.output_path, exist_ok=True)
         self.yt_dlp_video_options = {
-                "format": "bv*[filesize < 50M][ext=mp4] / w",
+                "format": "bv*[filesize < 50M][ext=mp4] + ba/w",
                 "outtmpl": f"{self.output_path}/%(title)s.%(ext)s",
             }
 
@@ -92,17 +98,20 @@ class BilibiliDownloader:
         """
         try:
             with yt_dlp.YoutubeDL(self.yt_dlp_video_options) as ydl:
-                info_dict = ydl.extract_info(url, download=False)
+                info_dict = await asyncio.to_thread(ydl.extract_info, url, download=False)
                 title = info_dict.get("title", "video")
                 filename = ydl.prepare_filename(info_dict)
 
-                ydl.download([url])
+                await asyncio.to_thread(ydl.download, [url])
+
+                media_group = MediaGroupBuilder(caption=truncate_string(title))
+                media_group.add_video(media=FSInputFile(filename), type=InputMediaType.VIDEO)
 
                 if os.path.exists(filename):
-                    yield title, filename
+                    yield media_group, [filename]
         except yt_dlp.DownloadError as e:
             logging.error(f"Error downloading YouTube video: {str(e)}")
-            yield None
+            yield None, None
         except Exception as e:
             logging.error(f"Error downloading YouTube video: {str(e)}")
-            yield None
+            yield None, None

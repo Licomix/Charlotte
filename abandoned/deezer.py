@@ -7,13 +7,13 @@ import yt_dlp
 from yt_dlp.utils import sanitize_filename
 import urllib.request
 
-from utils import update_metadata, get_spotify_author, search_music, get_all_tracks_from_playlist_spotify
+from utils import update_metadata, search_music, get_all_tracks_from_playlist_deezer
 
 
-class SpotifyDownloader:
+class DeezerDownloader:
     def __init__(self, output_path: str = "other/downloadsTemp"):
         """
-        Initialize the Spotify downloader with an output path for downloads.
+        Initialize the Deezer downloader with an output path for downloads.
 
         Parameters:
         ----------
@@ -37,14 +37,14 @@ class SpotifyDownloader:
 
     async def download(self, url: str, format: str = "audio"):
         """
-        Download a media file (video or audio) based on the format.
+        Downloads a single track or playlist
 
         Parameters:
         ----------
         url : str
-            The Spotify video URL to download.
+            The Deezer URL to download.
         format : str
-            The format of the download ('media' for video or 'audio' for audio).
+            The format of the download (Crutch, not used).
 
         Returns:
         -------
@@ -52,11 +52,11 @@ class SpotifyDownloader:
             Returns an async generator yielding audio and cover filenames or None if an error occurs.
         """
         try:
-            if re.match(r"https?://open\.spotify\.com/track/([\w-]+)", url):
+            if re.match(r"https?://deezer\.page\.link/([\w-]+)", url):
                 # Single track
                 async for result in self._download_single_track(url):
                     yield result
-            elif re.match(r"https?://open\.spotify\.com/playlist/([\w-]+)", url):
+            elif re.match(r"https:\/\/www\.deezer\.com\/[a-z]{2}\/playlist\/\d+", url):
                 # Playlist
                 async for result in self._download_playlist(url):
                     yield result
@@ -69,12 +69,12 @@ class SpotifyDownloader:
 
     async def _download_single_track(self, url: str):
         """
-        Downloads a single Spotify track.
+        Downloads a single Deezer track.
 
         Parameters:
         ----------
         url : str
-            The URL of the Spotify track to download.
+            The URL of the Deezer track to download.
 
         Yields:
         -------
@@ -85,35 +85,35 @@ class SpotifyDownloader:
 
     async def _download_playlist(self, url: str):
         """
-        Downloads a Spotify playlist by iterating over each track in the playlist.
+        Downloads a Deezer playlist by iterating over each track in the playlist.
 
         Parameters:
         ----------
         url : str
-            The URL of the Spotify playlist to download.
+            The URL of the Deezer playlist to download.
 
         Yields:
         -------
         tuple
             Yields the file paths of the downloaded audio and cover image for each track, or None if an error occurs.
         """
-        tracks = get_all_tracks_from_playlist_spotify(url)
+        tracks = get(url)
         for track in tracks:
             yield await self._download_track(track)
 
 
     async def _download_track(self, url: str, output_path: str = "other/downloadsTemp", format: str = "audio"):
         """
-        Downloads audio from YouTube based on a Spotify track's artist and title.
+        Downloads audio from YouTube based on a Deezer track's artist and title.
 
-        Given a Spotify URL, the function retrieves the artist and title, searches for a corresponding YouTube video,
+        Given a Deezer URL, the function retrieves the artist and title, searches for a corresponding YouTube video,
         and downloads the audio if the duration is 10 minutes or less. After the download, it updates the metadata and
-        adds the cover image from the Spotify track.
+        adds the cover image from the Deezer track.
 
         Parameters:
         -----------
         url : str
-            The Spotify track URL.
+            The Deezer track URL.
         output_path : str, optional
             Directory where the downloaded audio and cover image will be saved (default is "other/downloadsTemp").
         format : str, optional
@@ -126,13 +126,17 @@ class SpotifyDownloader:
             - audio_filename (str): The path to the downloaded audio file.
             - cover_filename (str): The path to the downloaded cover image.
         """
-        artist, title, cover_url = await get_spotify_author(url)
+        ydl = yt_dlp.YoutubeDL(self.yt_dlp_options)
+
+        deezer_track_info_dict = await asyncio.to_thread(ydl.extract_info, url, download=False)
+
+        artist = deezer_track_info_dict.get("description").split("-")[0].strip()
+        title = deezer_track_info_dict.get("title").strip()
+        cover_url = deezer_track_info_dict.get("thumbnail")
 
         video_link = await search_music(artist, title)
 
         try:
-            ydl = yt_dlp.YoutubeDL(self.yt_dlp_options)
-
             info_dict = await asyncio.to_thread(ydl.extract_info, video_link, download=False)
             ydl_title = info_dict.get("title")
 
@@ -150,4 +154,4 @@ class SpotifyDownloader:
 
         except Exception as e:
             logging.error(f"Error downloading YouTube Audio: {str(e)}")
-            return None, None
+            return None

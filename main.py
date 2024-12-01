@@ -1,9 +1,10 @@
 import asyncio
+import importlib
 import logging
 import os
+import pkgutil
 from logging.handlers import TimedRotatingFileHandler
 
-import handlers
 from database.database_manager import create_table_settings
 from loader import bot, dp
 from utils.language_middleware import CustomMiddleware, i18n
@@ -28,12 +29,22 @@ async def main():
     await create_table_settings()
     await set_default_commands()
 
+    load_modules(["handlers.user", "handlers.admin"], ignore_files=["__init__.py", "help.py"])
+
     try:
         await bot.delete_webhook(drop_pending_updates=True)
         await dp.start_polling(bot, on_startup=on_ready)
     except Exception as e:
         logging.error(f"An error occurred while starting the bot: {e}")
 
+def load_modules(plugin_packages, ignore_files=[]):
+    ignore_files.append("__init__")
+    for plugin_package in plugin_packages:
+        package = importlib.import_module(plugin_package)
+        for _, name, is_pkg in pkgutil.iter_modules(package.__path__):
+            if not is_pkg and name not in ignore_files:
+                logging.info(f"Loading module: {plugin_package}.{name}")
+                importlib.import_module(f"{plugin_package}.{name}")
 
 if __name__ == "__main__":
     log_dir = 'other/logs'

@@ -11,5 +11,5 @@ from .twitter import TwitterDownloader
 __all__ = [
     "AppleMusicDownloader", "BilibiliDownloader", "PinterestDownloader",
     "SoundCloudDownloader", "SpotifyDownloader", "TikTokDownloader",
-    "YouTubeDownloader", "InstagramDownloader", "TwitterDownloader"
+    "YouTubeDownloader", "InstagramDownloader", "TwitterDownloader",
 ]

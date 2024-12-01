@@ -12,6 +12,8 @@ from instagrapi import Client
 
 from config.secrets import INSTA_PASSWORD, INSTA_USERNAME
 
+from utils import truncate_string
+
 
 class InstagramDownloader:
     """
@@ -111,7 +113,7 @@ class InstagramDownloader:
             media_pk = self.client.media_pk_from_url(url)
             media = self.client.media_info(media_pk)
 
-            media_group = MediaGroupBuilder(caption=media.caption_text)
+            media_group = MediaGroupBuilder(caption=truncate_string(media.caption_text))
 
             if media.media_type == 8:  # GraphSidecar (multiple photos or videos)
                 for i, resource in enumerate(media.resources):
@@ -141,11 +143,11 @@ class InstagramDownloader:
                         else:
                             print(f"Failed to download media: {media_url}")
 
-            yield media_group, media.caption_text, temp_medias
+            yield media_group, temp_medias
 
         except Exception as e:
             logging.error(f"Error downloading Instagram media: {str(e)}")
-            yield None
+            yield None, None
 
     def _instagram_login(self):
         if os.path.exists("cookies.json"):

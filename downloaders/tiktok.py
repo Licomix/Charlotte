@@ -97,7 +97,7 @@ class TikTokDownloader:
                 media_group.add_video(media=FSInputFile(filename), type=InputMediaType.VIDEO)
 
                 if os.path.exists(filename):
-                    yield media_group, " ", filename
+                    yield media_group, filename
         except Exception as e:
             logging.error(f"Error downloading Tiktok video: {str(e)}")
-            yield None
+            yield None, None

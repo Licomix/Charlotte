@@ -146,3 +146,4 @@ class AppleMusicDownloader:
 
         except Exception as e:
             logging.error(f"Error downloading YouTube Audio: {e}", exc_info=True)
+            return None, None

@@ -1,3 +1,5 @@
+import asyncio
+
 from aiogram import types
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
@@ -30,3 +32,22 @@ async def help_command(message: types.Message, state: FSMContext) -> None:
         ).format(name=message.from_user.first_name),
         parse_mode=ParseMode.HTML,
     )
+
+
+user_tasks = {}
+
+@dp.message(Command("cancel"))
+async def cancel_command(message: types.Message, state: FSMContext) -> None:
+    user_id = message.from_user.id
+    if user_id in user_tasks:
+        task = user_tasks[user_id]
+        task.cancel()
+        try:
+            await task
+            await message.answer(_("Your download has been cancelled."))
+        except asyncio.CancelledError:
+            await message.answer(_("Download task was successfully cancelled."))
+        finally:
+            del user_tasks[user_id]
+    else:
+        await message.answer(_("No active download task found to cancel."))

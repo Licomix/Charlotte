@@ -2,7 +2,7 @@ import logging
 import yt_dlp
 
 
-def get_all_tracks_from_playlist_soundcloud(url: str) -> list[str]:
+def get_all_tracks_from_playlist_deezer(url: str) -> list[str]:
     """
     Extracts all track URLs from a SoundCloud playlist.
 
@@ -21,9 +21,10 @@ def get_all_tracks_from_playlist_soundcloud(url: str) -> list[str]:
         with yt_dlp.YoutubeDL(options) as ydl:
             playlist_info = ydl.extract_info(url, download=False)
 
-        track_urls = [entry.get('url') for entry in playlist_info.get('entries', []) if entry.get('url')]
 
-        return track_urls if track_urls else None
+        titles = [entry.get('fulltitle') for entry in playlist_info.get('entries', []) if entry.get('fulltitle')]
+
+        return titles if titles else None
 
     except Exception as e:
         logging.error(f"Error extracting track URLs from playlist: {e}")
