@@ -139,7 +139,7 @@ class AppleMusicDownloader:
 
             urllib.request.urlretrieve(cover_url, cover_filename)
 
-            update_metadata(audio_filename, artist, title, cover_filename)
+            update_metadata(audio_filename, artist=artist, title=title, cover_file=cover_filename)
 
             if audio_filename and cover_filename:
                 return audio_filename, cover_filename

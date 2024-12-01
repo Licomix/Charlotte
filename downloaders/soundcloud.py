@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import asyncio
@@ -133,7 +132,7 @@ class SoundCloudDownloader:
                 urllib.request.urlretrieve(cover_url, cover_filename)
 
             # Update metadata
-            update_metadata(audio_filename, title, artist)
+            update_metadata(audio_file=audio_filename, title=title, artist=artist, cover_file=cover_filename)
 
             # Return file paths if files exist
             if os.path.exists(audio_filename) and os.path.exists(cover_filename):
