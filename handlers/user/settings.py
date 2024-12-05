@@ -99,10 +99,7 @@ async def cancel_handler(message: Message, state: FSMContext) -> None:
 
 async def check_if_admin_or_owner(bot: Bot, chat_id: int, user_id: int) -> bool:
     chat_member = await bot.get_chat_member(chat_id, user_id)
-    if chat_member.is_anonymous:
-        return True
-    else:
-        return chat_member.status in [
-            ChatMemberStatus.ADMINISTRATOR,
-            ChatMemberStatus.CREATOR,
-        ]
+    return chat_member.is_anonymous or chat_member.status in [
+        ChatMemberStatus.ADMINISTRATOR,
+        ChatMemberStatus.CREATOR,
+    ]
