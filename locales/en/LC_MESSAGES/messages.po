@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-09-12 00:26+0200\n"
+"POT-Creation-Date: 2024-12-01 22:53+0100\n"
 "PO-Revision-Date: 2024-09-03 21:37+0200\n"
 "Last-Translator: \n"
 "Language: en\n"
@@ -36,7 +36,7 @@ msgid ""
 "erros: {error_send}"
 msgstr ""
 
-#: handlers/user/help.py:13
+#: handlers/user/help.py:15
 msgid ""
 "<b>Hey, {name}! You've reached out for help!</b>\n"
 "To get started, here are the commands available <i>to you</i>:\n"
@@ -61,6 +61,18 @@ msgid ""
 "<b>BiliBili</b> - It's a bit of a hassle, but I can send you videos.\n"
 "<b>Twitter</b> - I'll download videos and photos for you.\n"
 "<b>Instagram</b> - I'll download photos or Reels for you."
+msgstr ""
+
+#: handlers/user/help.py:48
+msgid "Your download has been cancelled."
+msgstr ""
+
+#: handlers/user/help.py:50
+msgid "Download task was successfully cancelled."
+msgstr ""
+
+#: handlers/user/help.py:54
+msgid "No active download task found to cancel."
 msgstr ""
 
 #: handlers/user/settings.py:29
@@ -99,19 +111,23 @@ msgid ""
 " https://buymeacoffee.com/jellytyan"
 msgstr ""
 
-#: handlers/user/url.py:35
+#: handlers/user/url.py:33
 msgid "Video"
 msgstr ""
 
-#: handlers/user/url.py:36
+#: handlers/user/url.py:34
 msgid "Audio"
 msgstr ""
 
-#: handlers/user/url.py:67
+#: handlers/user/url.py:72
 msgid "Critical error #022 - media file is too large"
 msgstr ""
 
-#: handlers/user/url.py:70
+#: handlers/user/url.py:74
+msgid "Critical error #013 - something's wrong, I'm gonna go eat some cookies"
+msgstr ""
+
+#: handlers/user/url.py:78
 msgid "Sorry, there was an error. Try again later 🧡"
 msgstr ""
 

@@ -20,9 +20,10 @@ from .set_bot_commands import set_default_commands
 
 #  Utils
 from .random_emoji import random_emoji
+from .truncate_string import truncate_string
 
 __all__ =[
     "delete_files", "get_all_tracks_from_playlist_spotify", "get_all_tracks_from_playlist_soundcloud",
     "get_applemusic_author", "get_spotify_author", "translate_text", "is_image_or_video", "search_music",
-    "get_chat_language", "set_default_commands", "update_metadata", "random_emoji"
+    "get_chat_language", "set_default_commands", "update_metadata", "random_emoji", "truncate_string"
 ]

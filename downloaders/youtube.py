@@ -6,7 +6,7 @@ import re
 import yt_dlp
 from yt_dlp.utils import sanitize_filename
 
-from utils import update_metadata, get_all_tracks_from_playlist_soundcloud
+from utils import update_metadata, get_all_tracks_from_playlist_soundcloud, truncate_string
 from aiogram.enums import InputMediaType
 from aiogram.types import FSInputFile
 from aiogram.utils.media_group import MediaGroupBuilder
@@ -119,14 +119,14 @@ class YouTubeDownloader:
 
                 await asyncio.to_thread(ydl.download, [url])
 
-                media_group = MediaGroupBuilder(caption=title)
+                media_group = MediaGroupBuilder(caption=truncate_string(title))
                 media_group.add_video(media=FSInputFile(filename), type=InputMediaType.VIDEO)
 
                 if os.path.exists(filename):
-                    yield media_group, title, [filename]
+                    yield media_group, [filename]
         except Exception as e:
             logging.error(f"Error downloading YouTube video: {str(e)}")
-            yield None
+            yield None, None
 
     async def _download_single_track(self, url: str):
         """
@@ -193,4 +193,4 @@ class YouTubeDownloader:
                     return audio_filename, thumbnail_filename
         except Exception as e:
             logging.error(f"Error downloading YouTube Audio: {str(e)}")
-            return None
+            return None, None

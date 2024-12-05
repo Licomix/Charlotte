@@ -8,9 +8,13 @@ import yt_dlp
 from aiogram.enums import InputMediaType
 from aiogram.types import FSInputFile
 from aiogram.utils.media_group import MediaGroupBuilder
-from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
+from utils import truncate_string
+
+semaphore = asyncio.Semaphore(3)
+
+browser_instance = None
 
 class TwitterDownloader:
     """
@@ -86,75 +90,94 @@ class TwitterDownloader:
 
                 await asyncio.to_thread(ydl.download, [url])
 
-                media_group = MediaGroupBuilder(caption=title)
+                media_group = MediaGroupBuilder(caption=truncate_string(title))
                 media_group.add_video(media=FSInputFile(filename), type=InputMediaType.VIDEO)
 
                 temp_medias.append(filename)
 
                 if os.path.exists(filename):
-                    yield media_group, title, temp_medias
+                    yield media_group, temp_medias
 
         except yt_dlp.DownloadError:
-            try:
-                async with async_playwright() as p:
-                    browser = await p.firefox.launch(
-                        headless=True,
-                        args=[
-                            "--no-sandbox",
-                            "--disable-dev-shm-usage",
-                            "--ignore-certificate-errors",
-                            "--disable-gpu",
-                            "--log-level=3",
-                            "--disable-notifications",
-                            "--disable-popup-blocking",
-                        ]
-                    )
-                    page = await browser.new_page()
-                    await page.goto(url)
+            async with semaphore:
+                try:
+                    async with async_playwright() as p:
+                        browser = await self._get_browser_instance(p)
 
-                    await asyncio.sleep(4)
+                        page = await browser.new_page()
 
-                    content = await page.content()
-                    soup = BeautifulSoup(content, "html.parser")
+                        await page.route(
+                            "**/*",
+                            lambda route: route.abort() if route.request.resource_type in ["font", "stylesheet",
+                                                                                           "media"] else route.continue_()
+                        )
 
-                    images = soup.find_all("img")
-                    tweet_text_div = soup.find("div", {"data-testid": "tweetText"})
-                    if tweet_text_div:
-                        tweet_spans = tweet_text_div.find_all("span")
-                        tweet_texts = [span.get_text() for span in tweet_spans]
-                        full_text = " ".join(tweet_texts)
-                    else:
-                        full_text = ""
+                        await page.goto(url)
 
-                    images = [img["src"] for img in images if "/media/" in str(img["src"])]
-                    title = f"{url.split('/')[3]} - {full_text}"
+                        await page.wait_for_selector('img[src*="/media/"]', timeout=5000)
 
-                    media_group = MediaGroupBuilder(caption=title)
+                        images = await page.eval_on_selector_all("img[src*='/media/']",
+                                                                 "imgs => imgs.map(img => img.src.split('&name')[0])")
+                        tweet_texts = await page.eval_on_selector_all(
+                            "div[data-testid='tweetText'] span",
+                            "spans => spans.map(span => span.innerText)"
+                        )
+                        full_text = " ".join(tweet_texts) if tweet_texts else ""
+                        title = f"{url.split('/')[3]} - {full_text}"
 
-                    temp_medias = []
+                        media_group = MediaGroupBuilder(caption=truncate_string(title))
 
-                    for image in images:
-                        image = image.split("&name")[0]
-                        filename = os.path.join(output_path, sanitize_filename(f"{image.split('/')[-1]}.jpg"))
-                        try:
-                            urllib.request.urlretrieve(image, filename)
-                            media_group.add_photo(media=FSInputFile(filename), type=InputMediaType.PHOTO)
-                            temp_medias.append(filename)
-                        except Exception as e:
-                            print(f"Failed to download image {image}: {e}")
-                            continue
+                        temp_medias = []
 
-                    await browser.close()
+                        for image in images:
+                            image = image.split("&name")[0]
+                            filename = os.path.join(output_path, self._sanitize_filename(f"{image.split('/')[-1]}.jpg"))
+                            try:
+                                urllib.request.urlretrieve(image, filename)
+                                media_group.add_photo(media=FSInputFile(filename), type=InputMediaType.PHOTO)
+                                temp_medias.append(filename)
+                            except Exception as e:
+                                print(f"Failed to download image {image}: {e}")
+                                continue
 
-                    yield media_group, title, temp_medias
+                        yield media_group, temp_medias
 
-            except Exception as e:
-                print(f"Error downloading Twitter post: {str(e)}")
+                except Exception as e:
+                    print(f"Error downloading Twitter post: {str(e)}")
+
+                finally:
+                    await self._close_browser()
 
         except Exception as e:
             logging.error(f"Error downloading Twitter video: {str(e)}")
-            yield None
+            yield None, None
 
-def sanitize_filename(filename: str) -> str:
-    # Удаляем символы, не подходящие для имени файла
-    return re.sub(r'[<>:"/\\|?*\x00-\x1F]', '_', filename)
+
+    def _sanitize_filename(self, filename: str) -> str:
+        # Удаляем символы, не подходящие для имени файла
+        return re.sub(r'[<>:"/\\|?*\x00-\x1F]', '_', filename)
+
+
+    async def _get_browser_instance(playwright):
+        global browser_instance
+        if not browser_instance:
+            browser_instance = await playwright.chromium.launch(
+                headless=True,
+                args=[
+                    "--no-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--ignore-certificate-errors",
+                    "--disable-gpu",
+                    "--log-level=3",
+                    "--disable-notifications",
+                    "--disable-popup-blocking",
+                ]
+            )
+        return browser_instance
+
+
+    async def _close_browser(self) -> None:
+        global browser_instance
+        if browser_instance:
+            await browser_instance.close()
+            browser_instance = None

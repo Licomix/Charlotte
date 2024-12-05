@@ -111,7 +111,7 @@ class PinterestDownloader:
                 media_group = MediaGroupBuilder()
                 media_group.add_video(media=FSInputFile(file_path), type=InputMediaType.VIDEO)
 
-                yield media_group, " ", file_path
+                yield media_group, file_path
 
         except Exception:
             async with aiohttp.ClientSession() as session:
@@ -140,11 +140,11 @@ class PinterestDownloader:
                         media_group = MediaGroupBuilder()
                         media_group.add_photo(media=FSInputFile(file_path), type=InputMediaType.PHOTO)
 
-                        yield media_group, " ", file_path
+                        yield media_group, file_path
 
                     else:
                         logging.error('Class "img" not found')
-                        yield None
+                        yield None, None
                 else:
                     logging.error(f"Error response status code {status_code}")
-                    yield None
+                    yield None, None
